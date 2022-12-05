@@ -1,12 +1,17 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Announcement from '../components/Announcement'
 import { Add, Remove } from '@material-ui/icons'
 import { mobile } from "../responsive";
+import { useDispatch, useSelector } from 'react-redux'
+import StripeCheckout from "react-stripe-checkout"
+import { userRequest } from '../requestMethods'
+import { useNavigate } from 'react-router-dom'
+import { increase, decrease, remove } from '../redux/cartRedux'
 
-
+const KEY = process.env.REACT_APP_STRIPE
 
 const Container = styled.div`
 
@@ -81,7 +86,7 @@ const ProductColor = styled.div`
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background-color: ${props=>props.color};
+    background-color: ${props => props.color};
 `
 const ProductSize = styled.span`
 
@@ -97,7 +102,7 @@ const PriceDetail = styled.span`
 const ProductAmountContainer = styled.div`
     display: flex;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 8px;
 `
 const ProductAmount = styled.div`
     ${mobile({ margin: "5px 15px" })}
@@ -127,99 +132,129 @@ const SummaryItem = styled.div`
     margin: 30px 0px;
     display: flex;
     justify-content: space-between;
-    font-weight: ${props=>props.type === "total" && "500"};
-    font-size: ${props=>props.type === "total" && "24"};
+    font-weight: ${props => props.type === "total" && "500"};
+    font-size: ${props => props.type === "total" && "24"};
 `
 
 
-const SummaryTitle=styled.h1`
+const SummaryTitle = styled.h1`
     font-weight: 200;
 `
-const SummaryItemText=styled.span`
+const SummaryItemText = styled.span`
 
 `
-const SummaryItemPrice=styled.span`
+const SummaryItemPrice = styled.span`
 
 `
-const SummaryButton=styled.button`
+const SummaryButton = styled.button`
     width: 100%;
     padding: 10px;
     background-color: black;
     color: white;
     font-weight: 600;
 `
-
-
-
+const ToggleButton = styled.button`
+    margin: 0 10px;
+    padding: 3px;
+    border-radius: 100%;
+    background-color: transparent;
+    &:hover{
+      background-color: black;
+      cursor: pointer;
+      color: antiquewhite;
+      transform: scale(1.2);
+    }
+`
+const RemoveButton = styled.button`
+    margin: 10px 0 0 0 ;
+    font-weight: 600;
+    border-radius: 5px;
+    background-color: transparent;
+    &:hover{
+      background-color: black;
+      cursor: pointer;
+      color: antiquewhite;
+      transform: scale(1.2);
+    }
+`
 
 const Cart = () => {
+  const [stripeToken, setStripeToken] = useState(null)
+  const cart = useSelector(state => state.cart)
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const onToken = (token) => {
+    setStripeToken(token)
+  }
+
+  useEffect(() => {
+    const makeReq = async () => {
+      try {
+        const res = await userRequest.post("/checkout/payment", {
+          tokenId: stripeToken.id,
+          amount: cart.total * 100,
+        })
+        navigate.push("/success", { data: res.data })
+      } catch {
+
+      }
+    }
+    stripeToken && cart.total >= 1 && makeReq()
+  }, [stripeToken, cart.total, navigate])
+
+
+
   return (
     <Container>
-        <Navbar/>
-        <Announcement/>
-        <Wrapper>
-            <Title></Title>
-            <Top>
-                <TopButton >CONTINUE SHOPPING</TopButton>
-                <TopTexts>
-                    <TopText>Shopping Bag (2)</TopText>
-                    <TopText>Your Wishlist (0)</TopText>
-                </TopTexts>
-                <TopButton type="filled">CHECKOUT NOW</TopButton>
-            </Top>
-            <Bottom>
-                <Info>
-                <Product>
-                    <ProductDetail>
-                        <Image src="https://hips.hearstapps.com/vader-prod.s3.amazonaws.com/1614188818-TD1MTHU_SHOE_ANGLE_GLOBAL_MENS_TREE_DASHERS_THUNDER_b01b1013-cd8d-48e7-bed9-52db26515dc4.png?crop=1xw:1.00xh;center,top&resize=480%3A%2A"/>
-                        <Details>
-                            <ProductName><b>Product:</b> JESSIE THUNDER SHOES</ProductName>
-                            <ProductId>051918919</ProductId>
-                            <ProductColor color="black"></ProductColor>
-                            <ProductSize></ProductSize>
-                        </Details>
-                    </ProductDetail>
-                    <PriceDetail>
-                        <ProductAmountContainer>
-                            <Add/>
-                            <ProductAmount>2</ProductAmount>
-                            <Remove/>
-                        </ProductAmountContainer>
-                        <ProductPrice>$30</ProductPrice>
-                    </PriceDetail>
-                </Product>
-                <Hr/>
-                <Product>
-              <ProductDetail>
-                <Image src="https://i.pinimg.com/originals/2d/af/f8/2daff8e0823e51dd752704a47d5b795c.png" />
-                <Details>
-                  <ProductName>
-                    <b>Product:</b> HAKURA T-SHIRT
-                  </ProductName>
-                  <ProductId>
-                    <b>ID:</b> 93813718293
-                  </ProductId>
-                  <ProductColor color="gray" />
-                  <ProductSize>
-                    <b>Size:</b> M
-                  </ProductSize>
-                </Details>
-              </ProductDetail>
-              <PriceDetail>
-                <ProductAmountContainer>
-                  <Add />
-                  <ProductAmount>1</ProductAmount>
-                  <Remove />
-                </ProductAmountContainer>
-                <ProductPrice>$ 20</ProductPrice>
-              </PriceDetail>
-            </Product>
-                </Info>
-                <Summary>
+      <Navbar />
+      <Announcement />
+      <Wrapper>
+        <Title></Title>
+        <Top>
+          <a href='/' style={{ "text-decoration": "none", "color": "black" }}>
+            <TopButton >CONTINUE SHOPPING</TopButton>
+          </a>
+          <TopTexts>
+            <TopText>Shopping Bag (2)</TopText>
+            <TopText>Your Wishlist (0)</TopText>
+          </TopTexts>
+          <TopButton type="filled">CHECKOUT NOW</TopButton>
+        </Top>
+        <Bottom>
+          <Info>
+            {cart.products.map(product =>(
+              <Product>
+                <ProductDetail>
+                  <Image src={product.img} />
+                  <Details>
+                    <ProductName><b>Product:</b> {product.title} </ProductName>
+                    <ProductId> {product._id} </ProductId>
+                    <ProductColor color={product.color} ><b>Color:</b>{product.color}</ProductColor>
+                    <ProductSize> <b>Size:</b> {product.size} </ProductSize>
+                  </Details>
+                </ProductDetail>
+                <PriceDetail>
+                  <ProductAmountContainer>
+                    <ToggleButton onClick={() => dispatch(decrease(product._id))}>
+                      <Remove />
+                    </ToggleButton>
+                    <ProductAmount> {product.quantity} </ProductAmount>
+                    <ToggleButton onClick={() => dispatch(increase(product._id))}>
+                      <Add />
+                    </ToggleButton>
+                  </ProductAmountContainer>
+                  <ProductPrice>$ {product.price * product.quantity} </ProductPrice>
+                  <RemoveButton onClick={() => { dispatch(remove(product._id)) }}>REMOVE</RemoveButton>
+                </PriceDetail>
+              </Product>
+            ))}
+            <Hr />
+          </Info>
+          <Summary>
             <SummaryTitle>ORDER SUMMARY</SummaryTitle>
             <SummaryItem>
               <SummaryItemText>Subtotal</SummaryItemText>
-              <SummaryItemPrice>$ 80</SummaryItemPrice>
+              <SummaryItemPrice>$ {cart.total} </SummaryItemPrice>
             </SummaryItem>
             <SummaryItem>
               <SummaryItemText>Estimated Shipping</SummaryItemText>
@@ -231,13 +266,24 @@ const Cart = () => {
             </SummaryItem>
             <SummaryItem type="total">
               <SummaryItemText>Total</SummaryItemText>
-              <SummaryItemPrice>$ 80</SummaryItemPrice>
+              <SummaryItemPrice>$ {cart.total}</SummaryItemPrice>
             </SummaryItem>
-            <SummaryButton>CHECKOUT NOW</SummaryButton>
+            <StripeCheckout
+              name="Lama Shop"
+              image="https://avatars.githubusercontent.com/u/1486366?v=4"
+              billingAddress
+              shippingAddress
+              description={`Your total is $${cart.total}`}
+              amount={cart.total * 100}
+              token={onToken}
+              stripeKey={KEY}
+            >
+              <SummaryButton>CHECKOUT NOW</SummaryButton>
+            </StripeCheckout>
           </Summary>
-            </Bottom>
-        </Wrapper>
-        <Footer/>
+        </Bottom>
+      </Wrapper>
+      <Footer />
     </Container>
   )
 }

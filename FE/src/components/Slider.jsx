@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import React, { useState } from 'react'
 import { sliderItems } from '../data'
 import { mobile } from "../responsive";
+import { Link } from 'react-router-dom';
 
 const Container = styled.div`
     width: 100%;
@@ -63,11 +64,7 @@ const Desc = styled.p`
     font-weight: 500;
     letter-spacing: 3px;
 `
-const Button = styled.button`
-    padding: 10px;
-    font-style: 20px;
-    background-color: transparent;
-`
+
 
 const InfoContainer = styled.div`
     flex: 1;
@@ -75,6 +72,7 @@ const InfoContainer = styled.div`
 `
 
 const Slider = () => {
+
     const [slideIndex,setSlideIndex] = useState(0)
     const handleClick = (direction) => {
         if(direction === "left") {
@@ -98,7 +96,13 @@ const Slider = () => {
                 <InfoContainer>
                     <Title> {item.title} </Title>
                     <Desc> {item.desc} </Desc>
-                    <Button>SHOW NOW</Button>
+                    <Link to="/products/shirt" className="btn btn-primary"
+                    style={{border:"2px solid black",
+                     padding:"10px",
+                      "border-radius":"5px",
+                      "text-decoration":"none", 
+                    "color":"black",
+                    }} >SHOP NOW</Link>
                 </InfoContainer>
             </Slide>
             ))}

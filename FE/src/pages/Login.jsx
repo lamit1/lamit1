@@ -1,6 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 import {mobile} from "../responsive";
+import {useDispatch, useSelector} from "react-redux"
+import { login } from '../redux/apiCall';
+import { Link } from 'react-router-dom';
 
 const Container = styled.div`
     display: flex;
@@ -47,26 +50,50 @@ const Button = styled.button`
     align-items: center;
     cursor: pointer;
     margin-bottom: 10px;
+    &:disabled {
+        color: green;
+        cursor: not-allowed;
+    }
 `
-const Link = styled.a`
+const LinkTo = styled.a`
     margin: 5px 0;
     font-size: 12px;
     text-decoration: underline;
     cursor: pointer;
 `
-
+const Error = styled.span`
+    color: red;
+`
 
 const Login = () => {
-  return (
+    const [username,setUsername] = useState("")
+    const [password,setPassword] = useState("")
+    const dispatch = useDispatch()
+    const {isFetching, error} = useSelector((state)=>state.user)
+    
+    const handleClick = (e) => {
+        e.preventDefault()
+        login(dispatch,{username,password})
+    }
+
+    return (
     <Container>
         <Wrapper>
             <Title>Sign in</Title>
             <Form>
-                <Input placeholder="username"></Input>
-                <Input placeholder="password"></Input>
-                <Button>Login</Button>
-                <Link>Do you remember your password?</Link>
-                <Link>Create a new account</Link>
+                <Input placeholder="username"
+                 onChange={(e)=> setUsername(e.target.value)}></Input>
+                <Input placeholder="password" 
+                        type="password"
+                 onChange={(e)=> setPassword(e.target.value)}></Input>
+                <Button onClick={handleClick} disabled={isFetching}>
+                <Link to="/" style={{"text-decoration":"none", "color":"white"}}>
+                Login
+                </Link>
+                </Button>
+                {error && <Error>Wrong password</Error>}
+                <LinkTo>Do you remember your password?</LinkTo>
+                <LinkTo>Create a new account</LinkTo>
             </Form>
         </Wrapper>
     </Container>

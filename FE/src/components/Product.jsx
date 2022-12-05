@@ -68,7 +68,7 @@ const Icon = styled.div`
 
 const Product = ({item, key}) => {
   return (
-    <Container>
+    <Container >
         <Circle/>
         <Image src={item.img}/>
         <Info>
@@ -76,13 +76,14 @@ const Product = ({item, key}) => {
                 <ShoppingCartOutlined/>
             </Icon>
             <Icon>
+            <a href={`/product/${item._id}`} style={{"text-decoration":"none", color:"black"}}>
                 <SearchOutlined/>
+            </a>
             </Icon>
             <Icon>
                 <FavoriteBorderOutlined/>
             </Icon>
         </Info>
-
     </Container>
   )
 }

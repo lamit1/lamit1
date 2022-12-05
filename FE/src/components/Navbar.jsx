@@ -1,13 +1,19 @@
 import { Badge } from '@material-ui/core'
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { Search, ShoppingCartOutlined } from '@material-ui/icons'
 import React from 'react'
 import styled from 'styled-components'
-import {mobile} from "../responsive"
-
+import { mobile } from "../responsive"
+import { useDispatch, useSelector } from "react-redux"
+import { Link } from 'react-router-dom';
+import { logout } from '../redux/userRedux'
 
 const Container = styled.div`
     height: 60px;
     ${mobile({ height: "50px" })}
+    *:focus {
+    outline: none;
+    }
 `
 
 const Wrapper = styled.div`
@@ -25,6 +31,7 @@ const Left = styled.div`
 `
 
 const Language = styled.span`
+    font-weight: 500;
     font-size: 14px;
     cursor: pointer;
     ${mobile({ display: "none" })}
@@ -58,7 +65,10 @@ const Right = styled.div`
 
 `
 
-const MenuItem =styled.div`
+const MenuItem = styled.div`
+    display: flex;
+    text-align: center;
+    text-decoration: none;
     font-size: 24px;
     cursor: pointer;
     margin-left: 25px;
@@ -68,33 +78,62 @@ const Center = styled.div`
     flex: 1;
     text-align: center;
 `
+
+
 const Navbar = () => {
-  return (
-    <Container>
-        <Wrapper>
-            <Left>
-                <Language>EN</Language>
-                <SearchContainer>
-                    <Input/>
-                    <Search style={{color:"gray", fontSize:16}} />
-                </SearchContainer>
-            </Left>
-            <Center>
-                <Logo>LAM.</Logo>                
-            </Center>
-            <Right>
-                <MenuItem>Register</MenuItem>
-                <MenuItem>Sign in</MenuItem>
-                <MenuItem>
-                    <Badge badgeContent={4} color="primary">
-                        <ShoppingCartOutlined/>
-                    </Badge>
-                </MenuItem>
-            </Right>
-            
-        </Wrapper>
-    </Container>
-  )
+    const dispatch = useDispatch()
+    const user = useSelector(state => state.user.currentUser)
+    const quantity = useSelector(state => state.cart.quantity)
+    return (
+        <Container>
+            <Wrapper>
+                <Left>
+                    <Language>EN</Language>
+                    <SearchContainer>
+                        <Input />
+                        <Search style={{ color: "gray", fontSize: 16 }} />
+                    </SearchContainer>
+                </Left>
+                <Center>
+                    <Logo>LAM.</Logo>
+                </Center>
+                <Right >
+                    {user ?
+                        (<>
+                            <MenuItem>
+                                <div style={{"padding":"3px 0 0 0"}}>
+                                <AccountCircleIcon style={{ "color": "teal", "margin":"0"}}
+                                />
+                                </div>
+                                <div style={{ "text-transform": "uppercase", "margin": "0 0 0 5px"}}>
+                                    {user.username}
+                                </div>
+                            </MenuItem> 
+                            <MenuItem>
+                                <Link to="/" style={{ "text-decoration": "none", "color": "black", "text-align": "center" }}
+                                    onClick={() => { dispatch(logout()) }}>
+                                    LOGOUT
+                                </Link>
+                            </MenuItem>
+                        </>) : (<>
+                            <Link to="/register" style={{ "text-decoration": "none", "color": "black" }}>
+                                <MenuItem>Register</MenuItem>
+                            </Link>
+                            <Link to="/login" style={{ "text-decoration": "none", "color": "black" }}>
+                                <MenuItem>Sign in</MenuItem>
+                            </Link>
+                        </>)}
+                    <Link to="/cart" >
+                        <MenuItem>
+                            <Badge badgeContent={quantity} color="primary">
+                                <ShoppingCartOutlined htmlColor='black' />
+                            </Badge>
+                        </MenuItem>
+                    </Link>
+                </Right>
+            </Wrapper>
+        </Container>
+    )
 }
 
 export default Navbar

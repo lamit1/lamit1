@@ -39,7 +39,7 @@ router.delete(":/userId", verifyTokenAndAdmin, async (req,res)=>{
         res.status(500).json(err)
     }
 })
-//GET Cart BY ID
+//GET Cart BY USER ID
 
 router.get("/find/:userId", verifyTokenAndAuthorization, async (req,res)=>{
     try {
